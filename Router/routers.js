@@ -1,5 +1,13 @@
 const express = require("express")
-const {home,createTodo,getTodos,getTodo,updateTodoTitle,deleteTodo,createTask} = require("../Controllers/toDoController")
+const{home,
+    createTodo,
+    getTodos,
+    getTodo,
+    updateTodoTitle,
+    deleteTodo,
+    createTask,
+    getTask,
+    deleteTask} = require("../Controllers/toDoController")
 const router = express.Router()
 
 router.get("/",home)
@@ -10,6 +18,7 @@ router.put("/updateTodoTitle/:id",updateTodoTitle)
 router.delete("/deleteTodo/:id",deleteTodo)
 
 router.post('/createTask/:id',createTask);
-
+router.get('/getTask/:id',getTask) 
+router.delete("/:todoId/deleteTask/:taskId",deleteTask)
 
 module.exports = router;

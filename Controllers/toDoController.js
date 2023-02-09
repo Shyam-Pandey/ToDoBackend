@@ -1,4 +1,6 @@
 const Todo = require('../Models/todo')
+var mongoose = require('mongoose');
+const { findByIdAndRemove } = require('../Models/todo');
 
 exports.home = (req, res) => {
     res.send("Hello I ma from Backend")
@@ -7,6 +9,7 @@ exports.home = (req, res) => {
 exports.createTodo = async (req, res) => {
     try {
         const { title } = req.body;
+        console.log(req.body)
         const todo = await Todo.create({ title });
         res.status(201).json({
             success: true,
@@ -84,21 +87,20 @@ exports.deleteTodo = async (req, res) => {
 
 exports.createTask = async (req, res) => {
     try {
+        const { title } = req.body;
         const { id } = req.params;
-        console.log(req.params.id)
-        const task = req.body;
-        const todoExist = await Todo.findById(id);
-        if (!todoExist)
-            throw new Error("No such type  of todo exists");
 
-        if (todoExist) {
-            todoExist.tasks.push(task);
-            await todoExist.save();
-            res.status(201).json({
-                success: true,
-                message: "Task Added Successfully",
-            });
-        }
+        if (!title)
+            throw new Error("Please provide task");
+        const todo = await Todo.findByIdAndUpdate(
+            id,
+            { $push: { tasks: { title } } },
+            { new: true }
+        );
+        res.status(201).json({
+            success: true,
+            message: "Task Added Successfully",
+        });
     }
     catch (err) {
         res.status(401).json({
@@ -108,3 +110,47 @@ exports.createTask = async (req, res) => {
     }
 };
 
+exports.getTask = async (req, res) => {
+    try {
+        const { id } = req.params
+        const todo = await Todo.findById(id);
+        if (!todo)
+            throw new Error("No Todo found");
+        res.status(201).json({
+            success: true,
+            todo
+        })
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+
+exports.deleteTask = async (req, res) => {
+    try {
+      const todoId = req.params.todoId;
+      const todoTaskId = req.params.id;
+  
+      // Finding Specific Todo from which we want to delete the task
+      const ToDoTask = await Todo.findById(todoId);
+  
+      // removing that specific task from TODo
+      await ToDoTask.tasks.pull({ _id: todoTaskId });
+  
+      await ToDoTask.save();
+  
+      res.status(201).json({
+        success: true,
+        message: "ToDo Deleted Successfully",
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(401).json({
+        success: false,
+        message: "Not Deleted",
+      });
+    }
+  };
